@@ -1,0 +1,81 @@
+group 'com.zencillo.printer'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+android {
+    if (project.android.hasProperty("namespace")) {
+        namespace 'com.zencillo.printer'
+    }
+
+    compileSdkVersion 33
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        minSdkVersion 19
+        ndk {
+            abiFilters "armeabi-v7a", "x86", "armeabi", "mips", "arm64"
+        }
+    }
+
+    dependencies {
+        testImplementation 'junit:junit:4.13.2'
+        testImplementation 'org.mockito:mockito-core:5.0.0'
+    }
+
+    testOptions {
+        unitTests.all {
+            testLogging {
+               events "passed", "skipped", "failed", "standardOut", "standardError"
+               outputs.upToDateWhen {false}
+               showStandardStreams = true
+            }
+        }
+    }
+}
+
+publishing {
+  publications {
+    barOne(MavenPublication) {
+        groupId 'nexgo-sdk'
+        artifactId 'nexgo'
+        version '3.0'
+        artifact("libs/nexgo.aar")
+    }
+  }
+}
+
+afterEvaluate {
+    tasks.clean.dependsOn("publishToMavenLocal")
+    tasks.preBuild.dependsOn("publishToMavenLocal")
+}
+
+dependencies {
+    implementation "nexgo-sdk:nexgo:3.0"
+    implementation files('libs/iso8583_V1.0.jar')
+    implementation files('libs/spdh_V1.6.jar')
+}
